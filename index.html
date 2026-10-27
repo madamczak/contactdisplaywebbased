@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#000000">
+    <meta name="description" content="A private, browser-based contact printing exposure timer.">
+    <link rel="icon" href="./icon.svg" type="image/svg+xml">
+    <link rel="manifest" href="./manifest.webmanifest">
+    <link rel="stylesheet" href="./styles.css">
+    <title>Contact Display</title>
+  </head>
+  <body>
+    <div id="splash" class="splash" aria-label="Contact Display loading">
+      <canvas id="splashCanvas" width="72" height="72"></canvas>
+    </div>
+
+    <canvas id="lifeCanvas" class="life-canvas" aria-hidden="true"></canvas>
+    <main id="app" class="app" hidden>
+      <section id="homeScreen" class="screen home-screen" aria-labelledby="homeTitle">
+        <div class="home-content">
+          <p class="eyebrow">A light-sensitive printing tool</p>
+          <h1 id="homeTitle">Contact<br>Display</h1>
+          <p class="home-intro">Prepare an image. Set the exposure. Let the light do its work.</p>
+          <div class="mode-buttons">
+            <button class="button button-large" type="button" data-open-mode="gum">Gum Bichromate<span>Long exposure · minutes</span></button>
+            <button class="button button-large" type="button" data-open-mode="paper">Photo Paper<span>Darkroom safelight · seconds</span></button>
+          </div>
+        </div>
+        <button id="helpButton" class="button button-quiet help-button" type="button">How to use <span aria-hidden="true">↗</span></button>
+      </section>
+
+      <section id="gumScreen" class="screen mode-screen" aria-labelledby="gumTitle" hidden>
+        <header class="mode-header">
+          <button class="button button-quiet" type="button" data-go-home>← Home</button>
+          <div><p class="eyebrow">Mode 01</p><h1 id="gumTitle">Gum Bichromate</h1></div>
+          <span class="mode-mark" aria-hidden="true">◼</span>
+        </header>
+        <div class="mode-layout">
+          <div class="control-column">
+            <label class="file-button button" for="imageFile">Load photo <span aria-hidden="true">＋</span></label>
+            <input id="imageFile" class="visually-hidden" type="file" accept="image/*">
+            <p class="file-name" id="fileName">No photo loaded. Drop an image here, or choose a file.</p>
+            <div class="control-block">
+              <label class="range-label" for="gumScale">Image size <output id="gumScaleValue" for="gumScale">100%</output></label>
+              <input id="gumScale" type="range" min="10" max="200" step="1" value="100" data-mode="gum" data-key="scale">
+            </div>
+            <div class="toggle-row">
+              <label class="toggle-label" for="gumBw"><span>Convert to black &amp; white</span><input id="gumBw" type="checkbox" data-mode="gum" data-key="bw"><span class="toggle"></span></label>
+              <label class="toggle-label" for="gumNegative"><span>Convert to negative</span><input id="gumNegative" type="checkbox" data-mode="gum" data-key="negative"><span class="toggle"></span></label>
+            </div>
+            <div class="control-block number-block">
+              <label for="gumExposure">Exposure time <span class="unit">minutes</span></label>
+              <input id="gumExposure" type="number" min="15" max="240" step="15" data-mode="gum" data-key="exposure">
+            </div>
+            <div class="control-block number-block">
+              <label for="gumPost">Black screen after exposure <span class="unit">minutes</span></label>
+              <input id="gumPost" type="number" min="0" max="240" step="15" data-mode="gum" data-key="post">
+            </div>
+            <button id="gumDisplay" class="button button-primary display-button" type="button" disabled>Display negative <span aria-hidden="true">↗</span></button>
+            <p class="mode-note">No safelight needed. Use a slightly dark room and set projector brightness manually.</p>
+          </div>
+          <div class="preview-column">
+            <p class="eyebrow">Preview</p>
+            <div class="preview-frame" id="gumDropArea">
+              <canvas id="gumPreview" aria-label="Processed photo preview"></canvas>
+              <p class="empty-preview" id="gumEmpty">Your image will appear here</p>
+            </div>
+            <p class="preview-caption">Centered · black background · aspect ratio preserved</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="paperScreen" class="screen mode-screen" aria-labelledby="paperTitle" hidden>
+        <header class="mode-header">
+          <button class="button button-quiet" type="button" data-go-home>← Home</button>
+          <div><p class="eyebrow">Mode 02</p><h1 id="paperTitle">Photo Paper</h1></div>
+          <span class="mode-mark" aria-hidden="true">◼</span>
+        </header>
+        <div class="mode-layout">
+          <div class="control-column">
+            <label class="file-button button" for="imageFile">Load photo <span aria-hidden="true">＋</span></label>
+            <div class="control-block">
+              <label class="range-label" for="paperScale">Image size <output id="paperScaleValue" for="paperScale">100%</output></label>
+              <input id="paperScale" type="range" min="10" max="200" step="1" value="100" data-mode="paper" data-key="scale">
+            </div>
+            <p class="file-name" id="paperFileName">No photo loaded. Drop an image here, or choose a file.</p>
+            <div class="toggle-row">
+              <label class="toggle-label" for="paperBw"><span>Convert to black &amp; white</span><input id="paperBw" type="checkbox" data-mode="paper" data-key="bw"><span class="toggle"></span></label>
+              <label class="toggle-label" for="paperNegative"><span>Convert to negative</span><input id="paperNegative" type="checkbox" data-mode="paper" data-key="negative"><span class="toggle"></span></label>
+              <label class="toggle-label safety-toggle" for="paperSafety"><span>Safety mode <small>Required for display</small></span><input id="paperSafety" type="checkbox" data-mode="paper" data-key="safety"><span class="toggle"></span></label>
+              <label class="toggle-label" for="paperBrightness"><span>Use device brightness <small>White controls before / after exposure</small></span><input id="paperBrightness" type="checkbox" data-mode="paper" data-key="brightness"><span class="toggle"></span></label>
+            </div>
+            <div class="time-grid">
+              <div class="control-block number-block"><label for="paperPre">Pre-display black <span class="unit">seconds</span></label><input id="paperPre" type="number" min="0" max="3600" step="1" data-mode="paper" data-key="pre"></div>
+              <div class="control-block number-block"><label for="paperDuration">Display duration <span class="unit">seconds</span></label><input id="paperDuration" type="number" min="1" max="3600" step="1" data-mode="paper" data-key="duration"></div>
+              <div class="control-block number-block"><label for="paperPost">Post-display black <span class="unit">seconds</span></label><input id="paperPost" type="number" min="0" max="3600" step="1" data-mode="paper" data-key="post"></div>
+            </div>
+            <div class="test-grid">
+              <div class="control-block number-block"><label for="paperStrips">Strip test <span class="unit">strips</span></label><input id="paperStrips" type="number" min="2" max="12" step="1" data-mode="paper" data-key="strips"></div>
+              <div class="control-block number-block"><label for="paperImages">Multi-image test <span class="unit">images</span></label><input id="paperImages" type="number" min="2" max="9" step="1" data-mode="paper" data-key="images"></div>
+            </div>
+            <div class="display-actions">
+              <button id="paperDisplay" class="button button-primary" type="button" disabled>Display negative <span aria-hidden="true">↗</span></button>
+              <button id="stripTest" class="button" type="button" disabled>Strip test</button>
+              <button id="multiTest" class="button" type="button" disabled>Multi-image test</button>
+            </div>
+            <p class="mode-note">Safety mode displays a dim red image and interface. Keep brightness mode off during exposure.</p>
+          </div>
+          <div class="preview-column">
+            <p class="eyebrow">Preview</p>
+            <div class="preview-frame" id="paperDropArea">
+              <canvas id="paperPreview" aria-label="Processed photo preview"></canvas>
+              <p class="empty-preview" id="paperEmpty">Your image will appear here</p>
+            </div>
+            <p class="preview-caption">Safety red · centered · aspect ratio preserved</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="helpScreen" class="screen help-screen" aria-labelledby="helpTitle" hidden>
+        <header class="mode-header">
+          <button class="button button-quiet" type="button" data-go-home>← Home</button>
+          <div><p class="eyebrow">A little guide</p><h1 id="helpTitle">How to use</h1></div>
+          <span class="mode-mark" aria-hidden="true">△</span>
+        </header>
+        <div class="help-content">
+          <article class="help-card">
+            <p class="eyebrow">01 / Gum Bichromate</p>
+            <h2>Make a print with light</h2>
+            <ol>
+              <li>Get watercolor paper.</li>
+              <li>Mix gum arabic solution with watercolor paint.</li>
+              <li>Add potassium bichromate. The mixture is now light-sensitive; a slightly dark room is enough.</li>
+              <li>Brush the paper and let it dry for about two hours. Add another layer and dry again if you like.</li>
+              <li>Load your image; convert it to black &amp; white or negative if needed.</li>
+              <li>Set the exposure (usually one to two hours), the black-screen time, and the image size. Adjust projector focus and sharpness.</li>
+              <li>Put dried paper in a clip frame in a dark place. Start <b>Display negative</b> and position the screen or projector.</li>
+              <li>After exposure, soak the paper image-down in water for about 20 minutes, checking periodically. Remove and dry when ready.</li>
+            </ol>
+          </article>
+          <article class="help-card">
+            <p class="eyebrow">02 / Photo Paper</p>
+            <h2>Work under a red safelight</h2>
+            <ol>
+              <li>Prepare photosensitive paper, developer, stop bath, and fixer.</li>
+              <li>Work under a red safelight. Load an image, convert it to black &amp; white and negative if desired, and adjust its size.</li>
+              <li>Turn on <b>Safety mode</b> before any display. The screen and image will use dim red light.</li>
+              <li>Use <b>device brightness</b> only for pre- or post-exposure setup, never during an exposure.</li>
+              <li>Set pre-display black, display duration, and post-display black. Run a strip or multi-image test to find a suitable duration.</li>
+              <li>Start <b>Display negative</b> and position the screen or projector over the paper.</li>
+              <li>Develop, stop, and fix using the same processing times as your test, then dry.</li>
+            </ol>
+            <p class="help-callout">Strip test reveals vertical bands from left to right: the first receives the longest exposure, and the last the shortest. Multi-image copies receive increasing exposure times; each copy turns black when its time ends.</p>
+          </article>
+          <p class="help-footer">Five quick taps or clicks on the display end playback. Settings stay in this browser; photos are never uploaded. Wake Lock requires a supported browser and a secure context.</p>
+        </div>
+      </section>
+    </main>
+
+    <div id="displayScreen" class="display-screen" aria-label="Exposure display" hidden>
+      <canvas id="displayCanvas"></canvas>
+    </div>
+    <div id="dropNotice" class="drop-notice" aria-hidden="true">Drop image to load</div>
+    <script src="./app.js"></script>
+  </body>
+</html>
