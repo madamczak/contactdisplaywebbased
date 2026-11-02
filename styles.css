@@ -100,7 +100,15 @@ body.safety-mode .button { border-color: #500; background: #090000; color: #8b00
 body.safety-mode .button:hover:not(:disabled), body.safety-mode .button:focus-visible { background: #8b0000; color: #000; border-color: #8b0000; }
 body.safety-mode .button-primary { background: #8b0000; color: #000; }
 body.safety-mode input[type="number"] { border-color: #500; background: #090000; color: #8b0000; }
-body.safety-mode input[type="range"] { accent-color: #8b0000; }
+body.safety-mode .control-block > label { color: #8b0000; }
+body.safety-mode .empty-preview { color: #561010; }
+body.safety-mode .button-large:hover span { color: #8b0000; }
+body.safety-mode input[type="range"] { appearance: none; accent-color: #8b0000; background: transparent; }
+body.safety-mode input[type="range"]::-webkit-slider-runnable-track { height: 4px; background: #390909; }
+body.safety-mode input[type="range"]::-webkit-slider-thumb { appearance: none; width: 14px; height: 14px; margin-top: -5px; border: 0; border-radius: 50%; background: #8b0000; }
+body.safety-mode input[type="range"]::-moz-range-track { height: 4px; background: #390909; }
+body.safety-mode input[type="range"]::-moz-range-thumb { width: 14px; height: 14px; border: 0; border-radius: 50%; background: #8b0000; }
+body.safety-mode input:focus-visible { outline-color: #8b0000; }
 body.safety-mode .toggle-label input:checked + .toggle { border-color: #8b0000; }
 body.safety-mode .toggle-label input:checked + .toggle::after { background: #8b0000; }
 body.full-brightness { color-scheme: light; background: #fff; color: #111; --white: #111; --grey: #555; --line: #bbb; }

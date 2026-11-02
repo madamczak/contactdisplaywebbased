@@ -162,11 +162,18 @@
       const sourceHeight = image.height || image.naturalHeight;
       if (!sourceWidth || !sourceHeight) throw new Error("This image has no readable dimensions.");
       const scale = Math.min(1, 2400 / sourceWidth, 2400 / sourceHeight, Math.sqrt(4000000 / (sourceWidth * sourceHeight)));
+      const isPortrait = sourceHeight > sourceWidth;
       const canvas = document.createElement("canvas");
-      canvas.width = Math.max(1, Math.round(sourceWidth * scale));
-      canvas.height = Math.max(1, Math.round(sourceHeight * scale));
+      canvas.width = Math.max(1, Math.round((isPortrait ? sourceHeight : sourceWidth) * scale));
+      canvas.height = Math.max(1, Math.round((isPortrait ? sourceWidth : sourceHeight) * scale));
       const context = canvas.getContext("2d", { willReadFrequently: true });
-      context.drawImage(image, 0, 0, canvas.width, canvas.height);
+      if (isPortrait) {
+        context.translate(canvas.width, 0);
+        context.rotate(Math.PI / 2);
+        context.drawImage(image, 0, 0, canvas.height, canvas.width);
+      } else {
+        context.drawImage(image, 0, 0, canvas.width, canvas.height);
+      }
       if (typeof image.close === "function") image.close();
       originalCanvas = canvas;
       imageName = file.name;
@@ -209,10 +216,12 @@
     loadImage(event.dataTransfer.files[0]);
   });
 
-  function processImage(mode) {
+  function processImage(mode, renderSafetyRed = mode === "paper" && settings[mode].safety) {
     if (!originalCanvas) return null;
     const options = settings[mode];
-    const signature = `${options.bw}:${options.negative}:${mode === "paper" && options.safety}:${originalCanvas.width}:${originalCanvas.height}`;
+    const safetyRed = mode === "paper" && options.safety && renderSafetyRed;
+    const safetyGrayscale = mode === "paper" && options.safety && !renderSafetyRed;
+    const signature = `${options.bw}:${options.negative}:${options.safety}:${safetyRed}:${originalCanvas.width}:${originalCanvas.height}`;
     if (processedSignatures[mode] === signature) return processedCanvases[mode];
     const canvas = document.createElement("canvas");
     canvas.width = originalCanvas.width;
@@ -221,7 +230,6 @@
     context.drawImage(originalCanvas, 0, 0);
     const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
     const pixels = imageData.data;
-    const safetyRed = mode === "paper" && options.safety;
     for (let index = 0; index < pixels.length; index += 4) {
       let red = pixels[index];
       let green = pixels[index + 1];
@@ -243,6 +251,12 @@
         pixels[index + 1] = 0;
         pixels[index + 2] = 0;
       } else {
+        if (safetyGrayscale) {
+          const luminance = Math.round(0.299 * red + 0.587 * green + 0.114 * blue);
+          red = luminance;
+          green = luminance;
+          blue = luminance;
+        }
         pixels[index] = red;
         pixels[index + 1] = green;
         pixels[index + 2] = blue;
@@ -291,7 +305,7 @@
   document.getElementById("multiTest").addEventListener("click", () => startPlayback("paper", "multi"));
 
   function startPlayback(mode, type) {
-    const image = processImage(mode);
+    const image = processImage(mode, false);
     if (!image || (mode === "paper" && !settings.paper.safety)) return;
     if (mode === "paper" && settings.paper.brightness) {
       settings.paper.brightness = false;
