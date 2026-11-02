@@ -67,7 +67,7 @@ Controls:
 2. **Image size** slider – placed directly below the Load photo button.
 3. **Convert to black & white**.
 4. **Convert to negative**.
-5. **Safety mode** switch: when on, the UI and displayed image are rendered in dark red (image mapped to the red channel only; use a dark red such as `#8B0000`-ish max intensity, tunable). **The negative cannot be displayed unless safety mode is on.**
+5. **Safety mode** switch: when on, the UI and preview image are rendered in dark red (image mapped to the red channel only; use a dark red such as `#8B0000`-ish max intensity, tunable). The exposure image is black and white. **The negative cannot be displayed unless safety mode is on.**
 6. **Use device brightness** switch: in the web version, this toggles a "full-brightness UI" (white UI) for pre/post operations such as loading and setting times. It must be off during exposure. The safety-mode UI and image size stay white-independent (controls remain functional in safety mode).
 7. **Display settings** (seconds):
    - **Pre-display black**: black screen before the image (time to place the screen/projector over the paper). Default 10.
@@ -83,7 +83,7 @@ Controls:
 
 Display behaviour:
 - Sequence: pre black → image → post black → return to settings.
-- Fullscreen, centered image at chosen scale, red when safety mode is on.
+- Fullscreen, centered black-and-white image at chosen scale; the interface and preview remain red when safety mode is on.
 - Exit by clicking the screen 5 times, same as gum bichromate.
 - Wake Lock as above.
 - Show no UI during display (optionally a very dim countdown could be a setting, off by default).
